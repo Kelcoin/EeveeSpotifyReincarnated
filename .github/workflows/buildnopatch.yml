@@ -13,6 +13,16 @@ on:
         default: ""
         required: false
         type: string
+      app_name:
+        description: "Installed app name"
+        default: "EeveeSpotify"
+        required: true
+        type: string
+      bundle_id:
+        description: "Installed app bundle identifier"
+        default: "in.kelco.spotify.client"
+        required: true
+        type: string
       upload_method:
         description: "Where to upload the built IPA"
         default: "artifacts"
@@ -26,6 +36,8 @@ on:
 env:
   THEOS: ${{ github.workspace }}/theos
   SWIFTPROTOBUF_VERSION: "1.29.0"
+  APP_NAME: ${{ inputs.app_name }}
+  BUNDLE_ID: ${{ inputs.bundle_id }}
 
 jobs:
   build:
@@ -141,7 +153,7 @@ jobs:
           # -c max compress. Watch + native appex strip happens in the next
           # step via Tools/strip-ipa.sh.
           cyan -i ${{ github.workspace }}/spotify.ipa -o "$OUT" \
-               -f "${INJECT[@]}" -c 9 -m 15.0 -du
+               -f "${INJECT[@]}" -n "$APP_NAME" -b "$BUNDLE_ID" -c 9 -m 15.0 -du
           echo "OUT_IPA=$OUT" >> $GITHUB_ENV
 
       - name: Strip incompatible bundles
