@@ -38,7 +38,7 @@ final class LyricifyWorkerLyricsRepository: LyricsRepository {
         session = URLSession(configuration: configuration)
     }
 
-    private func requestURL(for query: LyricsSearchQuery) throws -> URL {
+    private func requestURL(for query: LyricsSearchQuery, options: LyricsOptions) throws -> URL {
         let configuredURL = Self.normalizedBaseURL(UserDefaults.lyricifyWorkerUrl)
 
         guard var components = URLComponents(string: configuredURL),
@@ -54,15 +54,20 @@ final class LyricifyWorkerLyricsRepository: LyricsRepository {
         if !basePath.hasSuffix("/v1/lyrics") {
             components.path = basePath + "/v1/lyrics"
         }
-        let languageCode = "zh"
-        components.queryItems = [
+        var queryItems = [
             URLQueryItem(name: "title", value: query.title),
             URLQueryItem(name: "artist", value: query.primaryArtist),
             URLQueryItem(name: "spotifyId", value: query.spotifyTrackId),
-            URLQueryItem(name: "language", value: languageCode),
-            URLQueryItem(name: "providers", value: "netease,qqmusic,lrclib"),
-            URLQueryItem(name: "translationMode", value: "prefer")
+            URLQueryItem(name: "providers", value: "qqmusic,netease,kugou,lrclib")
         ]
+        if options.romanization {
+            // Keep the original lyrics so LyricsDto can apply its romanization transform.
+            queryItems.append(URLQueryItem(name: "romanization", value: "true"))
+        } else {
+            queryItems.append(URLQueryItem(name: "language", value: "zh"))
+            queryItems.append(URLQueryItem(name: "translationMode", value: "prefer"))
+        }
+        components.queryItems = queryItems
 
         guard let url = components.url else {
             throw LyricsError.invalidLyricifyWorkerConfiguration
@@ -71,7 +76,7 @@ final class LyricifyWorkerLyricsRepository: LyricsRepository {
     }
 
     func getLyrics(_ query: LyricsSearchQuery, options: LyricsOptions) throws -> LyricsDto {
-        var request = URLRequest(url: try requestURL(for: query))
+        var request = URLRequest(url: try requestURL(for: query, options: options))
         let token = UserDefaults.lyricifyWorkerToken
             .trimmingCharacters(in: .whitespacesAndNewlines)
         if !token.isEmpty {
