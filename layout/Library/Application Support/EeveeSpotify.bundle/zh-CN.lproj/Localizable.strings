@@ -128,6 +128,12 @@ request_anonymous_token = "请求匿名令牌";
 request_anonymous_token_description = "点击 “请求匿名令牌” 即可在无需授权的情况下向 Musixmatch 请求令牌。";
 
 lrclib_api = "服务器地址";
+lyricify_worker_url = "Worker 地址";
+lyricify_worker_token = "API Token（可选）";
+lyricify_worker_token_placeholder = "如有需要，请输入 API Token";
+lyricify_worker_description = "Lyricify Worker：通过自行部署的 Cloudflare Worker 加载逐行同步歌词。请输入 Worker 的 HTTPS 地址；如已启用鉴权，还需填写 API Token。";
+invalid_lyricify_worker_token = "Lyricify Worker 未授权";
+invalid_lyricify_worker_configuration = "Lyricify Worker 地址无效";
 
 // Snapshot of your benefits, should match official spotify loc
 

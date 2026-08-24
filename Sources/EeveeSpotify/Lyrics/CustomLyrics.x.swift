@@ -26,7 +26,10 @@ private func loadCustomLyricsForTrackId(_ trackId: String) throws -> Lyrics {
     var currentArtist: String? = nil
     var hasMetadata = false
 
-    let needsMetadata = source == .genius || source == .lrclib || source == .petit
+    let needsMetadata = source == .genius
+        || source == .lrclib
+        || source == .lyricifyWorker
+        || source == .petit
 
     // 1. Use cached metadata if it's for the same track
     if capturedTrackId == trackId, let title = capturedTrackTitle, let artist = capturedArtistName {
@@ -108,6 +111,8 @@ private func loadCustomLyricsForTrackId(_ trackId: String) throws -> Lyrics {
         repository = LrclibLyricsRepository.shared
     case .musixmatch:
         repository = MusixmatchLyricsRepository.shared
+    case .lyricifyWorker:
+        repository = LyricifyWorkerLyricsRepository.shared
     case .petit:
         repository = petitLyricsRepository
     case .spicylyrics:
@@ -216,6 +221,8 @@ private func loadCustomLyricsForCurrentTrack() throws -> Lyrics {
         repository = LrclibLyricsRepository.shared
     case .musixmatch:
         repository = MusixmatchLyricsRepository.shared
+    case .lyricifyWorker:
+        repository = LyricifyWorkerLyricsRepository.shared
     case .petit:
         repository = petitLyricsRepository
     case .spicylyrics:

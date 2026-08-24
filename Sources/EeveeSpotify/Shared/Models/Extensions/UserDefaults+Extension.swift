@@ -4,6 +4,8 @@ extension UserDefaults {
     static var container: UserDefaults = .standard
     
     private static let musixmatchTokenKey = "musixmatchToken"
+    private static let lyricifyWorkerUrlKey = "lyricifyWorkerUrl"
+    private static let lyricifyWorkerTokenKey = "lyricifyWorkerToken"
     private static let darkPopUpsKey = "darkPopUps"
     private static let patchTypeKey = "patchType"
     private static let trueShuffleEnabledKey = "trueShuffleEnabled"
@@ -22,6 +24,16 @@ extension UserDefaults {
         set (token) {
             container.set(token, forKey: musixmatchTokenKey)
         }
+    }
+
+    static var lyricifyWorkerUrl: String {
+        get { container.string(forKey: lyricifyWorkerUrlKey) ?? "" }
+        set { container.set(newValue, forKey: lyricifyWorkerUrlKey) }
+    }
+
+    static var lyricifyWorkerToken: String {
+        get { container.string(forKey: lyricifyWorkerTokenKey) ?? "" }
+        set { container.set(newValue, forKey: lyricifyWorkerTokenKey) }
     }
 
     static var darkPopUps: Bool {

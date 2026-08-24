@@ -11,6 +11,9 @@ extension EeveeLyricsSettingsView {
         text.append("petitlyrics_description".localized)
 
         text.append("\n\n")
+        text.append("lyricify_worker_description".localized)
+
+        text.append("\n\n")
         text.append("lyrics_additional_info".localized)
 
         return Text(text)
@@ -47,12 +50,46 @@ extension EeveeLyricsSettingsView {
                 if viewModel.lyricsSource == .musixmatch {
                     musixmatchTokenField()
                 }
+
+                if viewModel.lyricsSource == .lyricifyWorker {
+                    lyricifyWorkerConfigurationFields()
+                }
                 
                 if viewModel.lyricsSource == .lrclib {
                     lrclibURLField()
                 }
             }
         }
+    }
+
+    @ViewBuilder private func lyricifyWorkerConfigurationFields() -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("lyricify_worker_url".localized)
+
+            TextField("https://example.workers.dev", text: $viewModel.lyricifyWorkerUrl)
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+                .foregroundColor(.gray)
+        }
+        .icon(
+            "exclamationmark.circle",
+            color: .red,
+            when: Binding<Bool>(
+                get: { !viewModel.isLyricifyWorkerURLValid },
+                set: { _ in }
+            )
+        )
+        .frame(maxWidth: .infinity, alignment: .leading)
+
+        VStack(alignment: .leading, spacing: 5) {
+            Text("lyricify_worker_token".localized)
+
+            SecureField("lyricify_worker_token_placeholder".localized, text: $viewModel.lyricifyWorkerToken)
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+                .foregroundColor(.gray)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     @ViewBuilder private func musixmatchTokenField() -> some View {

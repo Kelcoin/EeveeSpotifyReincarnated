@@ -59,6 +59,18 @@ extension EeveeLyricsSettingsViewModel {
                 }
             }
             .store(in: &cancellables)
+
+        $lyricifyWorkerUrl
+            .dropFirst()
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .sink { UserDefaults.lyricifyWorkerUrl = $0 }
+            .store(in: &cancellables)
+
+        $lyricifyWorkerToken
+            .dropFirst()
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .sink { UserDefaults.lyricifyWorkerToken = $0 }
+            .store(in: &cancellables)
         
         $lyricsSource
             .dropFirst()

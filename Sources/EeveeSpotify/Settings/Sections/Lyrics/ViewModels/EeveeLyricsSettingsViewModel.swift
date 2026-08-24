@@ -9,9 +9,17 @@ class EeveeLyricsSettingsViewModel: ObservableObject {
     }
     
     @Published var musixmatchToken = UserDefaults.musixmatchToken
+    @Published var lyricifyWorkerUrl = UserDefaults.lyricifyWorkerUrl
+    @Published var lyricifyWorkerToken = UserDefaults.lyricifyWorkerToken
     @Published var isRequestingMusixmatchToken = false
     @Published var musixmatchTokenInputAlertPublisher = PassthroughSubject<Bool, Never>()
     var isMusixmatchTokenValid: Bool { getMusixmatchToken(musixmatchToken) != nil }
+    var isLyricifyWorkerURLValid: Bool {
+        let url = lyricifyWorkerUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let components = URLComponents(string: url),
+              let scheme = components.scheme?.lowercased() else { return false }
+        return scheme == "https" && components.host != nil
+    }
     
     @Published var showMusixmatchInvalidLanguageWarning = false
     @Published var lrclibURLState = LrclibURLState.default
@@ -21,6 +29,8 @@ class EeveeLyricsSettingsViewModel: ObservableObject {
             lyricsSource,
             lyricsOptions,
             isMusixmatchTokenValid,
+            lyricifyWorkerUrl,
+            lyricifyWorkerToken,
             isRequestingMusixmatchToken,
             lrclibURLState,
             showMusixmatchInvalidLanguageWarning

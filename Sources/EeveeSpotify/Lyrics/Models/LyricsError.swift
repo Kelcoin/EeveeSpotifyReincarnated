@@ -5,6 +5,8 @@ enum LyricsError: Error, CustomStringConvertible {
     case trackMismatch
     case musixmatchRestricted
     case invalidMusixmatchToken
+    case invalidLyricifyWorkerToken
+    case invalidLyricifyWorkerConfiguration
     case decodingError
     case noSuchSong
     case unknownError
@@ -19,6 +21,10 @@ enum LyricsError: Error, CustomStringConvertible {
             return "musixmatch_restricted".localized
         case .invalidMusixmatchToken:
             return "invalid_musixmatch_token".localized
+        case .invalidLyricifyWorkerToken:
+            return "invalid_lyricify_worker_token".localized
+        case .invalidLyricifyWorkerConfiguration:
+            return "invalid_lyricify_worker_configuration".localized
         case .decodingError:
             return "decoding_error".localized
         case .unknownError:

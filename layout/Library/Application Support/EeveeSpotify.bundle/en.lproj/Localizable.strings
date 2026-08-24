@@ -146,6 +146,12 @@ request_anonymous_token = "Request Anonymous Token";
 request_anonymous_token_description = "Tap “Request Anonymous Token” to request a token from Musixmatch without authorization.";
 
 lrclib_api = "Server Address";
+lyricify_worker_url = "Worker Address";
+lyricify_worker_token = "API Token (Optional)";
+lyricify_worker_token_placeholder = "Enter API Token if required";
+lyricify_worker_description = "Lyricify Worker: Uses your self-hosted Cloudflare Worker to load line-synced lyrics. Enter its HTTPS address and, if authentication is enabled, its API token.";
+invalid_lyricify_worker_token = "Lyricify Worker Unauthorized";
+invalid_lyricify_worker_configuration = "Invalid Lyricify Worker Address";
 
 // Snapshot of your benefits, should match official spotify loc
 
