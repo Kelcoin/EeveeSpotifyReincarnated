@@ -11,6 +11,7 @@ private struct LyricifyWorkerResponse: Decodable {
         let lines: [String]
     }
 
+    let provider: String?
     let timeSynced: Bool
     let lines: [Line]
     let translation: Translation?
@@ -48,12 +49,18 @@ final class LyricifyWorkerLyricsRepository: LyricsRepository {
         if !basePath.hasSuffix("/v1/lyrics") {
             components.path = basePath + "/v1/lyrics"
         }
+        let languageCode = Locale.current.languageCode
         components.queryItems = [
             URLQueryItem(name: "title", value: query.title),
             URLQueryItem(name: "artist", value: query.primaryArtist),
             URLQueryItem(name: "spotifyId", value: query.spotifyTrackId),
-            URLQueryItem(name: "language", value: Locale.current.languageCode)
+            URLQueryItem(name: "language", value: languageCode)
         ]
+        if languageCode?.lowercased().hasPrefix("zh") == true {
+            components.queryItems?.append(
+                URLQueryItem(name: "providers", value: "netease,qqmusic,lrclib")
+            )
+        }
 
         guard let url = components.url else {
             throw LyricsError.invalidLyricifyWorkerConfiguration
@@ -107,21 +114,34 @@ final class LyricifyWorkerLyricsRepository: LyricsRepository {
         let indexedLines = response.lines.enumerated().sorted {
             ($0.element.offsetMs ?? 0) < ($1.element.offsetMs ?? 0)
         }
-        let lines = indexedLines.map {
+        var displayLines = indexedLines.map {
             LyricsLineDto(content: $0.element.content.lyricsNoteIfEmpty, offsetMs: $0.element.offsetMs)
         }
-        let translation = response.translation.flatMap { translation -> LyricsTranslationDto? in
-            guard translation.lines.count == response.lines.count else { return nil }
-            return LyricsTranslationDto(
-                languageCode: translation.languageCode,
-                lines: indexedLines.map { translation.lines[$0.offset] }
-            )
+        var translatedLineCount = 0
+        if let translation = response.translation {
+            for (displayIndex, indexedLine) in indexedLines.enumerated() {
+                let originalIndex = indexedLine.offset
+                guard originalIndex < translation.lines.count else { continue }
+                let translatedLine = translation.lines[originalIndex]
+                guard !translatedLine.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                else { continue }
+                displayLines[displayIndex].content = translatedLine
+                translatedLineCount += 1
+            }
         }
+
+        writeDebugLog(
+            "[Lyricify Worker] status=\(httpResponse.statusCode) "
+                + "provider=\(response.provider ?? "unknown") "
+                + "lines=\(response.lines.count) translatedLines=\(translatedLineCount)"
+        )
+
         return LyricsDto(
-            lines: lines,
+            lines: displayLines,
             timeSynced: response.timeSynced,
-            romanization: lines.map(\.content).canBeRomanized ? .canBeRomanized : .original,
-            translation: translation
+            romanization: translatedLineCount > 0 ? .original
+                : (displayLines.map(\.content).canBeRomanized ? .canBeRomanized : .original),
+            translation: nil
         )
     }
 }
