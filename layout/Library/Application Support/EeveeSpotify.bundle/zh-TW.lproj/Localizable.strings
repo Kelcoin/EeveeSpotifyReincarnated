@@ -92,6 +92,14 @@ show_instagram_destination_description = "永遠顯示分享至 Instagram。%@";
 livecontainer_sharing = "顯示分享至 LiveContainer";
 livecontainer_sharing_description = "若分享目標不可用，則分享至 LiveContainer 並複製連結。";
 
+// 雜項設定
+
+miscellaneous = "雜項設定";
+
+clean_share_links = "移除追蹤參數";
+clean_share_links_description = "清除網址追蹤碼";
+
+
 /* MARK: Premium 提示 */
 
 have_premium_popup = "您看起來擁有可用的 Premium 訂閱，故 EeveeSpotify 將不會修改您的資料或限制部分 Premium 功能。您仍可於 EeveeSpotify 設定中管理。";
@@ -169,6 +177,8 @@ appIconTitle = "選擇圖標";
 appIconSubtitle = "iOS/iPadOS 將會在第一次變更時顯示提示，主畫面可能需要一點時間來更新。";
 iconSelected = "選中";
 iconTapToApply = "輕觸以應用";
+prettifyIconNames = "最佳化圖標名稱";
+prettifyIconNamesDescription = "將底線、連字號和駝峰命名轉換為空格";
 
 // SponsorBlock
 categoryOneFooter = "在播客中跳過由社群標記的片段。";
