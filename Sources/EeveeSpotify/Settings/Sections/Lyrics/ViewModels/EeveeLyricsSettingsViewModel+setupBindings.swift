@@ -62,7 +62,7 @@ extension EeveeLyricsSettingsViewModel {
 
         $lyricifyWorkerUrl
             .dropFirst()
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .map(LyricifyWorkerLyricsRepository.normalizedBaseURL)
             .sink { UserDefaults.lyricifyWorkerUrl = $0 }
             .store(in: &cancellables)
 

@@ -20,6 +20,12 @@ private struct LyricifyWorkerResponse: Decodable {
 final class LyricifyWorkerLyricsRepository: LyricsRepository {
     static let shared = LyricifyWorkerLyricsRepository()
 
+    static func normalizedBaseURL(_ value: String) -> String {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "" }
+        return trimmed.contains("://") ? trimmed : "https://\(trimmed)"
+    }
+
     private let session: URLSession
 
     private init() {
@@ -33,8 +39,7 @@ final class LyricifyWorkerLyricsRepository: LyricsRepository {
     }
 
     private func requestURL(for query: LyricsSearchQuery) throws -> URL {
-        let configuredURL = UserDefaults.lyricifyWorkerUrl
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let configuredURL = Self.normalizedBaseURL(UserDefaults.lyricifyWorkerUrl)
 
         guard var components = URLComponents(string: configuredURL),
               let scheme = components.scheme?.lowercased(),
@@ -49,18 +54,15 @@ final class LyricifyWorkerLyricsRepository: LyricsRepository {
         if !basePath.hasSuffix("/v1/lyrics") {
             components.path = basePath + "/v1/lyrics"
         }
-        let languageCode = Locale.current.languageCode
+        let languageCode = "zh"
         components.queryItems = [
             URLQueryItem(name: "title", value: query.title),
             URLQueryItem(name: "artist", value: query.primaryArtist),
             URLQueryItem(name: "spotifyId", value: query.spotifyTrackId),
-            URLQueryItem(name: "language", value: languageCode)
+            URLQueryItem(name: "language", value: languageCode),
+            URLQueryItem(name: "providers", value: "netease,qqmusic,lrclib"),
+            URLQueryItem(name: "translationMode", value: "prefer")
         ]
-        if languageCode?.lowercased().hasPrefix("zh") == true {
-            components.queryItems?.append(
-                URLQueryItem(name: "providers", value: "netease,qqmusic,lrclib")
-            )
-        }
 
         guard let url = components.url else {
             throw LyricsError.invalidLyricifyWorkerConfiguration

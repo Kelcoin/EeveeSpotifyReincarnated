@@ -15,7 +15,7 @@ class EeveeLyricsSettingsViewModel: ObservableObject {
     @Published var musixmatchTokenInputAlertPublisher = PassthroughSubject<Bool, Never>()
     var isMusixmatchTokenValid: Bool { getMusixmatchToken(musixmatchToken) != nil }
     var isLyricifyWorkerURLValid: Bool {
-        let url = lyricifyWorkerUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        let url = LyricifyWorkerLyricsRepository.normalizedBaseURL(lyricifyWorkerUrl)
         guard let components = URLComponents(string: url),
               let scheme = components.scheme?.lowercased() else { return false }
         return scheme == "https" && components.host != nil
