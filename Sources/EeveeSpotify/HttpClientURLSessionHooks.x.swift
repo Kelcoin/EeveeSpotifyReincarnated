@@ -78,7 +78,13 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
                     semaphore.signal()
                 }
                 _ = semaphore.wait(timeout: .now() + .milliseconds(18000))
-                orig.URLSession(session, dataTask: task, didReceiveData: customLyricsData ?? buffer)
+                let lyricsPayload = customLyricsData
+                    ?? emptyLyricsData(originalLyrics: originalLyrics)
+                    ?? Data()
+                if customLyricsData == nil {
+                    writeDebugLog("[Lyrics] custom source failed or timed out; suppressing Spotify fallback")
+                }
+                orig.URLSession(session, dataTask: task, didReceiveData: lyricsPayload)
                 orig.URLSession(session, task: task, didCompleteWithError: nil)
                 return
             }
@@ -127,11 +133,14 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
         DispatchQueue.global(qos: .userInitiated).async { [self] in
             let data = try? getLyricsDataForCurrentTrack(url.path)
 
-            guard let lyricsData = data,
+            let lyricsData = data ?? emptyLyricsData()
+            guard let lyricsData,
                   let ok = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "2.0", headerFields: [:]) else {
-                handler(.allow)
-                orig.URLSession(session, dataTask: task, didReceiveResponse: response, completionHandler: { _ in })
+                handler(.cancel)
                 return
+            }
+            if data == nil {
+                writeDebugLog("[Lyrics] custom source failed for non-200 response; returning empty lyrics")
             }
 
             orig.URLSession(session, dataTask: task, didReceiveResponse: ok, completionHandler: handler)

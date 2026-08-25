@@ -61,8 +61,9 @@ final class LyricifyWorkerLyricsRepository: LyricsRepository {
             URLQueryItem(name: "providers", value: "qqmusic,netease,kugou,lrclib")
         ]
         if options.romanization {
-            // Keep the original lyrics so LyricsDto can apply its romanization transform.
-            queryItems.append(URLQueryItem(name: "romanization", value: "true"))
+            // A language value keeps Worker provider lookups parallel. "original"
+            // deliberately matches no translation, so Eevee can romanize the source text.
+            queryItems.append(URLQueryItem(name: "language", value: "original"))
         } else {
             queryItems.append(URLQueryItem(name: "language", value: "zh"))
             queryItems.append(URLQueryItem(name: "translationMode", value: "prefer"))
@@ -125,7 +126,7 @@ final class LyricifyWorkerLyricsRepository: LyricsRepository {
             LyricsLineDto(content: $0.element.content.lyricsNoteIfEmpty, offsetMs: $0.element.offsetMs)
         }
         var translatedLineCount = 0
-        if let translation = response.translation {
+        if !options.romanization, let translation = response.translation {
             for (displayIndex, indexedLine) in indexedLines.enumerated() {
                 let originalIndex = indexedLine.offset
                 guard originalIndex < translation.lines.count else { continue }

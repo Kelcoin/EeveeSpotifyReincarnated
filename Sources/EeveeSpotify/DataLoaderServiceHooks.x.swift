@@ -73,7 +73,8 @@ class SPTDataLoaderServiceHook: ClassHook<NSObject>, SpotifySessionDelegate {
         }
 
         do {
-            // Lyrics — async fetch with 18s budget, falls back to Spotify's own response on failure.
+            // Lyrics — async fetch with an 18s budget. Never leak Spotify's original
+            // Musixmatch payload when the selected custom source fails.
             //
             // iOS 27 / Spotify 9.1.60 fix: Spotify's URLSession delegate handler for
             // didReceiveData now accesses @MainActor-isolated state. When we call orig.*
@@ -96,7 +97,12 @@ class SPTDataLoaderServiceHook: ClassHook<NSObject>, SpotifySessionDelegate {
                 }
 
                 _ = semaphore.wait(timeout: .now() + .milliseconds(18000))
-                let lyricsPayload = customLyricsData ?? buffer
+                let lyricsPayload = customLyricsData
+                    ?? emptyLyricsData(originalLyrics: originalLyrics)
+                    ?? Data()
+                if customLyricsData == nil {
+                    writeDebugLog("[Lyrics] custom source failed or timed out; suppressing Spotify fallback")
+                }
                 DispatchQueue.main.async { [self] in
                     orig.URLSession(session, dataTask: task, didReceiveData: lyricsPayload)
                     orig.URLSession(session, task: task, didCompleteWithError: nil)
@@ -157,12 +163,14 @@ class SPTDataLoaderServiceHook: ClassHook<NSObject>, SpotifySessionDelegate {
         DispatchQueue.global(qos: .userInitiated).async { [self] in
             let data = try? getLyricsDataForCurrentTrack(url.path)
 
-            guard let lyricsData = data,
+            let lyricsData = data ?? emptyLyricsData()
+            guard let lyricsData,
                   let ok = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "2.0", headerFields: [:]) else {
-                // Fetch failed — let Spotify handle the original non-200 response.
-                handler(.allow)
-                orig.URLSession(session, dataTask: task, didReceiveResponse: response, completionHandler: { _ in })
+                handler(.cancel)
                 return
+            }
+            if data == nil {
+                writeDebugLog("[Lyrics] custom source failed for non-200 response; returning empty lyrics")
             }
 
             DispatchQueue.main.async { [self] in
